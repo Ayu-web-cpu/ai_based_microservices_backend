@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package gateway;
+
+
+// ------------------------------
+// Auth messages & service
+// ------------------------------
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message TokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message VerifyRequest {
+  string token = 1;
+}
+
+message VerifyResponse {
+  string sub = 1;   // user id as string
+  string role = 2;
+  bool valid = 3;   // optional flag
+  string error = 4; // optional error message
+}
+
+// ------------------------------
+// Search history messages & service
+// ------------------------------
+message SearchResult {
+  string text = 1;
+  string url = 2;            // optional
+  map<string, string> meta = 3; // optional metadata
+}
+
+message SaveHistoryRequest {
+  string user_id = 1;        // string for safety (proto int64 okay too)
+  string query = 2;
+  repeated SearchResult results = 3;
+}
+
+message SaveHistoryResponse {
+  bool ok = 1;
+  int64 id = 2;              // DB id assigned to history row
+  string error = 3;
+}
+
+message ListHistoryRequest {
+  string user_id = 1;
+  int32 limit = 2;           // optional paging
+  int32 offset = 3;
+}
+
+message HistoryItem {
+  int64 id = 1;
+  string user_id = 2;
+  string query = 3;
+  repeated SearchResult results = 4;
+  string timestamp = 5;      // ISO8601 string
+}
+
+message ListHistoryResponse {
+  repeated HistoryItem items = 1;
+  int32 total = 2;
+}
+
+message DeleteHistoryRequest {
+  int64 id = 1;              // item id
+  string user_id = 2;        // enforce ownership
+}
+
+message DeleteHistoryResponse {
+  bool ok = 1;
+  string error = 2;
+}
+
+// ------------------------------
+// Combined service
+// ------------------------------
+service GatewayAuthSearch {
+  // Auth
+  rpc Login (LoginRequest) returns (TokenResponse);
+  rpc Verify (VerifyRequest) returns (VerifyResponse);
+
+  // Search history management
+  rpc SaveHistory (SaveHistoryRequest) returns (SaveHistoryResponse);
+  rpc ListHistory (ListHistoryRequest) returns (ListHistoryResponse);
+  rpc DeleteHistory (DeleteHistoryRequest) returns (DeleteHistoryResponse);
+}

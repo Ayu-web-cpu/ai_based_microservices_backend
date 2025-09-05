@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package authoriz;
+
+// Auth service RPCs
+service AuthService {
+  rpc Register (RegisterRequest) returns (TokenResponse);
+  rpc Login (LoginRequest) returns (TokenResponse);
+  rpc Refresh (RefreshRequest) returns (TokenResponse);
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message TokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string role = 3;
+  int64 expires_at = 4;
+  string error = 5;
+}

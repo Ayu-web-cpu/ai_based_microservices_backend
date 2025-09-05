@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package image;
+
+
+// ------------------------------
+// Image generation messages
+// ------------------------------
+message GenerateImageRequest {
+  string user_id = 1;           // user ID as string (consistent with auth service)
+  string prompt = 2;            // prompt text
+  string model = 3;             // optional model name (e.g., "flux")
+  string profile = 4;           // optional profile
+}
+
+message GenerateImageResponse {
+  bool ok = 1;                  // success flag
+  string message = 2;           // error or info message
+  string image_url = 3;         // generated image URL
+  string results_json = 4;      // JSON-encoded raw MCP results
+  int64 id = 5;                 // DB id assigned to this image record
+  string timestamp = 6;         // ISO8601 timestamp
+}
+
+
+// ------------------------------
+// Image history messages
+// ------------------------------
+message ListHistoryRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ImageHistoryItem {
+  int64 id = 1;
+  string user_id = 2;
+  string prompt = 3;
+  string image_url = 4;
+  string results_json = 5;
+  string timestamp = 6;
+}
+
+message ListHistoryResponse {
+  repeated ImageHistoryItem items = 1;
+  int32 total = 2;
+}
+
+message DeleteImageRequest {
+  int64 id = 1;
+  string user_id = 2;
+}
+
+message DeleteImageResponse {
+  bool ok = 1;
+  string error = 2;
+}
+
+
+// ------------------------------
+// Image service
+// ------------------------------
+service ImageService {
+  // Generate a new image
+  rpc GenerateImage (GenerateImageRequest) returns (GenerateImageResponse);
+
+  // List previously generated images
+  rpc ListHistory (ListHistoryRequest) returns (ListHistoryResponse);
+
+  // Delete a generated image record
+  rpc DeleteImage (DeleteImageRequest) returns (DeleteImageResponse);
+}
